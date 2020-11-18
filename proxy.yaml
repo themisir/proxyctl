@@ -1,0 +1,12 @@
+listen: ":80"
+insecure: true
+services:
+  - name: rabbitmq
+    target: svc/rabbitmq
+    namespace: mq
+    port: 15672
+  - name: argocd
+    target: svc/argocd-server
+    namespace: argocd
+    port: 80
+    protocol: https

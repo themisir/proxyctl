@@ -1,0 +1,6 @@
+github.com/lextoumbourou/goodhosts v1.0.0 h1:lmvlU8jQ8LpQydb3XC8Q5281LM/Jsw7XNrdGP7NWhfQ=
+github.com/lextoumbourou/goodhosts v2.1.0+incompatible h1:1U1p5Z1wrXl23/fW/GY4zdTbQ8UJbyvrkPbqAZ6tzbw=
+github.com/lextoumbourou/goodhosts v2.1.0+incompatible/go.mod h1:89s48k108X3gKDWn8AHk3gUzUGTcMZCCAOsE4QU1bbo=
+gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
+gopkg.in/yaml.v2 v2.3.0 h1:clyUAQHOM3G0M3f5vQj7LuJrETvjVot3Z5el9nffUtU=
+gopkg.in/yaml.v2 v2.3.0/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=
