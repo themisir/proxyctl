@@ -45,12 +45,18 @@ func GetManifestFilename() string {
 
 	tryFiles := []string{"proxy.yaml", "proxy.yml"}
 
-	if usr, err := user.Current(); err != nil && usr != nil {
-		tryFiles = append(tryFiles, path.Join(usr.HomeDir, ".proxy.yaml"), path.Join(usr.HomeDir, ".proxy.yml"))
+	if usr, err := user.Current(); err == nil {
+		tryFiles = append(
+			tryFiles,
+			path.Join(usr.HomeDir, "proxy.yaml"),
+			path.Join(usr.HomeDir, ".proxy.yaml"),
+			path.Join(usr.HomeDir, "proxy.yml"),
+			path.Join(usr.HomeDir, ".proxy.yml"),
+		)
 	}
 
 	for _, filename := range tryFiles {
-		if _, err := os.Stat(filename); err != nil {
+		if _, err := os.Stat(filename); err == nil {
 			return filename
 		}
 	}
@@ -133,8 +139,8 @@ func main() {
 		DisableSSL()
 	}
 
-	// Wait 3 seconds for kubectl proxies to fire up
-	time.Sleep(3 * time.Second)
+	// Wait a seconds for kubectl proxies to fire up
+	time.Sleep(1 * time.Second)
 
 	if listen == "" {
 		listen = manifest.Listen
