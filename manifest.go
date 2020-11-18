@@ -20,6 +20,11 @@ type Manifest struct {
 	Listen   string
 	Insecure bool
 	Services []Service
+	TLS      struct {
+		Enabled bool
+		Cert    string
+		Key     string
+	}
 }
 
 func ParseManifest(data []byte) (*Manifest, error) {

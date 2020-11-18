@@ -47,3 +47,21 @@ services:
     port: 80
     protocol: https
 ```
+
+## TLS support
+
+Sometimes some services requires https connection. For example argocd doesn't work if you're connected using HTTP because server sets secure-only cookie which requires HTTPS. In that case you can enable TLS support on **proxyctl**. The provided certificate will be used for all incoming requests.
+
+```yaml
+tls:
+  enabled: true
+  cert: /home/.ssl/proxy.pem
+  key: /home/.ssl/proxy-key.pem
+```
+
+You can use [mkcert](https://github.com/FiloSottile/mkcert) tool to create self-signed certificates for development purposes.
+
+```shell script
+mkcert -install
+mkcert service1.local service2.local service3.local
+```

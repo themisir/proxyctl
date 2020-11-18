@@ -11,14 +11,19 @@ import (
 	"os/signal"
 	"os/user"
 	"path"
+	"strconv"
+	"strings"
 	"syscall"
 	"time"
 )
 
 var childProcesses = make([]*os.Process, 0)
+var verbose = false
 
 func StartKubectlProxy(svc *Service) error {
-	log.Printf("Starting %s (%s) proxy at *:%d", svc.Target, svc.Namespace, svc.LocalPort)
+	if verbose {
+		log.Printf("Starting %s (%s) proxy at *:%d", svc.Target, svc.Namespace, svc.LocalPort)
+	}
 
 	cmd := exec.Command(
 		"kubectl",
@@ -95,6 +100,7 @@ func main() {
 	flag.BoolVar(&noHosts, "no-hosts", false, "Disable hosts file changes")
 	flag.StringVar(&listen, "listen", "", "Listen address")
 	flag.BoolVar(&insecure, "insecure", false, "Disable SSL certificate verification")
+	flag.BoolVar(&verbose, "verbose", false, "Print detailed logs")
 	flag.Parse()
 
 	manifest, err := ReadManifest(GetManifestFilename()); if err != nil {
@@ -105,6 +111,17 @@ func main() {
 	}
 	rules := make(map[string]string, len(manifest.Services))
 	hostsModified := false
+
+	if listen == "" {
+		listen = manifest.Listen
+	}
+
+	port, err := strconv.ParseInt(strings.Split(listen, ":")[1], 10, 32); if err != nil {
+		log.Println("Invalid port number")
+		Exit(1)
+	}
+
+	println("Proxyctl will redirect requests from those domains:")
 
 	for _, svc := range manifest.Services {
 		// Update proxy rule
@@ -125,6 +142,21 @@ func main() {
 				Raw:   fmt.Sprintf("127.0.0.1 %s", svc.Name),
 			})
 		}
+
+		// Print URL
+		if manifest.TLS.Enabled {
+			if port == 443 {
+				fmt.Printf("https://%s/\n", svc.Name)
+			} else {
+				fmt.Printf("https://%s:%d/\n", svc.Name, port)
+			}
+		} else {
+			if port == 80 {
+				fmt.Printf("http://%s/\n", svc.Name)
+			} else {
+				fmt.Printf("http://%s:%d/\n", svc.Name, port)
+			}
+		}
 	}
 
 	if hostsModified {
@@ -142,14 +174,20 @@ func main() {
 	// Wait a seconds for kubectl proxies to fire up
 	time.Sleep(1 * time.Second)
 
-	if listen == "" {
-		listen = manifest.Listen
-	}
+	// Create handler
+	handler := ProxyHandler{rules}
 
+	// Listen and serve
 	log.Printf("Listening at %s\n", listen)
-
-	if err := http.ListenAndServe(listen, ProxyHandler{rules}); err != nil {
-		log.Println(err)
-		Exit(2)
+	if manifest.TLS.Enabled {
+		if err := http.ListenAndServeTLS(listen, manifest.TLS.Cert, manifest.TLS.Key, handler); err != nil {
+			log.Println(err)
+			Exit(2)
+		}
+	} else {
+		if err := http.ListenAndServe(listen, handler); err != nil {
+			log.Println(err)
+			Exit(2)
+		}
 	}
 }

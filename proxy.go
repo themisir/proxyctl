@@ -35,7 +35,9 @@ func (h ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	target := h.Rules[hostname] + r.RequestURI
 	checkError := func(err error) bool {
 		if err != nil {
-			log.Println(err)
+			if verbose {
+				log.Println(err)
+			}
 			w.WriteHeader(503)
 			_, _ = w.Write(nil)
 		}
@@ -43,7 +45,9 @@ func (h ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Log request
-	log.Printf("%s %s%s -> %s\n", r.Method, hostname, r.RequestURI, target)
+	if verbose {
+		log.Printf("%s %s%s -> %s\n", r.Method, hostname, r.RequestURI, target)
+	}
 
 	// Prepare request
 	req, err := http.NewRequest(r.Method, target, r.Body); if checkError(err) {
